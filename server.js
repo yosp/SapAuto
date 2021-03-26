@@ -9,14 +9,49 @@ cron.schedule("30 15 * * *", function () { //Schedule Task
   //Minutos, Horas, Mes, Dia del mes, Dia de la semana,
   
   const dat = new Date();
-  let fechaA = `${dat.getFullYear()}${dat.getMonth() + 1}${dat.getDate()-1}`
-  let fecha = `${dat.getFullYear()}${dat.getMonth() + 1}${dat.getDate()}`;
+  let mesA = null
+  let mes = null
+  let dayA = null
+  let day = null
+  let last = null
+
+  if ((dat.getMonth()+1)<10) {
+    mes = `0${dat.getMonth()+1}`
+  } else {
+    mes = dat.getMonth()+1
+  }
+
+  if (dat.getDate() == '1') {
+    last = new Date(dat.getFullYear(), dat.getMonth, 0)
+    dayA = last.getDate()
+    day = dat.getDate()
+    if ((last.getMonth()+1)<10) {
+      mesA = `0${last.getMonth()+1}`
+    } else {
+      mesA = last.getMonth()+1
+    }
+
+  } else {
+    dayA = dat.getDate() - 1
+    day = dat.getDate()
+    if ((dat.getMonth()+1)<10) {
+      mesA = `0${dat.getMonth()+1}`
+    } else {
+      mesA = dat.getMonth()+1
+    }
+  }
+
+  let fechaA = `${dat.getFullYear()}${mesA}${dayA}`
+  let fecha = `${dat.getFullYear()}${mes}${day}`;
   let hora = `${dat.getHours()}:${dat.getMinutes()}:${dat.getSeconds()}`;
+  let totalOrd = null
+  let totalOrdComp = null
   console.log(`Corriendo en fecha ${fecha} y hora ${hora}`);
   getSapOrders(fechaA, fecha, function (err, data) {
     if (err) {
       console.log(err);
     } else {
+      totalOrd = data.length 
       data.forEach((ord) => {
         Db.addOrdersTemps(ord, function (e, data) {
           if (e) {
@@ -46,6 +81,7 @@ cron.schedule("30 15 * * *", function () { //Schedule Task
           if (err) {
             console.log(err);
           } else {
+            totalOrdComp = data.length
             data.forEach((comp) => {
               Db.addOrdersCompTemps(comp, function (e, data) {
                 if (e) {
@@ -76,7 +112,7 @@ cron.schedule("30 15 * * *", function () { //Schedule Task
 
   setTimeout(() => {
     db.SapAddOrUpdOrders(()=> {
-      console.log('Ordenes Actualizadas')
+      console.log(`${totalOrd} Ordenes y ${totalOrdComp} Componentes fueron registrados/actualizados`)
     })
   }, 180000);
 });
