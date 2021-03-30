@@ -44,4 +44,41 @@ function getSapOrdersComp(FechaI, FechaF, callback) {
   }
 }
 
-module.exports = { getSapOrders, getSapOrdersComp };
+function getLotes(FechaI, FechaF, callback) {
+  try {
+    axios
+      .get(`http://extgmp01:8065/?name=http_tb_iep_AceroGM_tbLotes_rd_full&where=MARA~MTART%20IN%20(%27ZPT%27,%20%27ZMP%27,%20%27ZSEM%27,%20%27ZAUX%27)%20AND%20MCHB~CLABS%20%3E%200%20AND%20MCHB~LGORT%20IN%20(%270400%27,%20%270450%27,%20%270420%27,%20%270422%27)%20AND%20((MCHB~ERSDA%20%3E=%20%27${FechaI}%27%20AND%20MCHB~ERSDA%20%3C=%20%27${FechaF}%27)%20OR%20(MCHB~LAEDA%20%3E=%20%27${FechaI}%27%20AND%20MCHB~LAEDA%20%3C=%20%27${FechaF}%27))`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        },
+      }).then(function (res) {
+        callback(null, res.data)
+      })
+      .catch(function (err) {
+        callback(err, null)
+      })
+  } catch (e) {
+    callback(e, null)
+  }
+}
+
+function getMaterial(FechaI, FechaF, callback){
+    try {
+      axios.get(`http://extgmp01:8065/?name=http_tb_iep_AceroGM_tbMateriales_rd_full&where=MAKT~SPRAS%20=%20'S'%20AND%20MARA~MTART%20IN%20('ZPT',%20'ZMP',%20'ZSEM')%20AND%20MVKE~VKORG%20=%20'IN01'%20AND%20((MARA~ERSDA%20%3E=%20'${FechaI}'%20AND%20MARA~ERSDA%20%3C=%20'${FechaF}')%20OR%20(MARA~LAEDA%20%3E=%20'${FechaI}'%20AND%20MARA~LAEDA%20%3C=%20'${FechaF}'))`,
+        {
+          headers: {
+            "Content-Type": "application/json"
+          },
+        }
+      ).then(function (res) {
+        callback(null, res.data)
+      }).catch(function (err){
+        callback(err, null)
+      })
+    } catch (e) {
+      callback(e, null)
+    }
+}
+
+module.exports = { getSapOrders, getSapOrdersComp, getLotes, getMaterial };

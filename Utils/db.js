@@ -28,8 +28,34 @@ class Db {
         }
       });
     } catch (error) {}
+	} 
+
+  async SapAddOrUpdMaterial(callback) {
+    try {
+      const request = new sql.Request();
+      await sql.connect(this.setting);
+      request.execute("sp_SapInserUpdateMaterial", (err, result) => {
+        if (err) {
+          callback(err, null);
+        } else {
+          callback(null, result);
+        }
+      });
+    } catch (error) {}
 	}
-	
+  async SapAddOrUpdLote(callback) {
+    try {
+      const request = new sql.Request();
+      await sql.connect(this.setting);
+      request.execute("sp_SapInserUpdateLote", (err, result) => {
+        if (err) {
+          callback(err, null);
+        } else {
+          callback(null, result);
+        }
+      });
+    } catch (error) {}
+	} 
 	async addOrdersTemps(orderm, callback) {
 		try {
       await sql.connect(this.setting);
@@ -40,15 +66,39 @@ class Db {
                                               ${orderm.GSTRS}, ${orderm.GLTRS}, ${orderm.BMSCH/orderm.VGW01}, ${orderm.PLNNR}, 
                                               ${orderm.VORNR}, ${orderm.BMSCH},${orderm.VGW01}, ${orderm.VERID}, 
                                               ${orderm.ARBPL}, ${orderm.WERKS})`;
-                                              // values(${orderm.aufnrField}, ${orderm.plnbezField},${orderm.gamngField}, ${orderm.gmeinField}, 
-                                              //   ${orderm.gstrpField}, ${orderm.gltrsField}, ${orderm.ephField}, ${orderm.plnnrField}, 
-                                              //   ${orderm.vornrField}, ${orderm.bmschField},${orderm.vgw01Field}, ${orderm.veridField}, 
-                                              //   ${orderm.arbplField}, ${orderm.werksField})
       callback(null, query);
     } catch (e) {
       callback(e, null)
     }
 	}
+
+  async addMaterial(Matr, callback) {
+    try {
+      await sql.connect(this.setting)
+      const query = await sql.query`insert into tbMateriales_temp (Material, Descripcion, Descripcion2 ,CreadoEl, ModificadoEl, IndBorrado, TipoMat, 
+                                          GrupoMat, UndBase, UndPedido, UndPack, Longuitud, Ancho, 
+                                          Alto, Numerador, Denominador,JerarquiaProd, CodBarra, Perfil)
+                                          values(${Matr.MATNR},${Matr.MAKTX},${Matr.MAKTX} ,${Matr.ERSDA},${Matr.LAEDA},${Matr.LVORM},${Matr.MTART},
+                                            ${Matr.MATKL},${Matr.MEINS},${Matr.BSTME},${Matr.GROES},${Matr.LAENG},${Matr.BREIT},
+                                            ${Matr.HOEHE},${Matr.UMREZ},${Matr.UMREN},${Matr.PRODH},${Matr.EAN11},${Matr.VRKME})`
+      callback(null, query)
+    } catch (e) {
+      callback(e, null)
+    }
+  }
+
+  async addLotes(stLotes, callback) {
+    try {
+      await sql.connect(this.setting)
+      const query = await sql.query`insert into tbLotes_temp (Material, Centro, Almacen, Lote, Stock, PeticionBorrado, FechaCreacion)
+                                      values(${stLotes.MATNR},${stLotes.WERKS},${stLotes.LGORT},${stLotes.CHARG},
+                                        ${stLotes.CLABS},${stLotes.LVORM},${stLotes.LAEDA})`
+      callback(null, query)
+
+    } catch (e) {
+      callback(e, null)
+    }
+  }
 
 	async addOrdersCompTemps(comp, callback) {
 		try {
@@ -66,7 +116,7 @@ class Db {
   
   async auditReg(data, callback) {
     try {
-      const query = await sql.query`insert into tbOrdenAudit (Data, Type, RegDate ) values(${data.dat}, ${data.tipo}, getdate())`
+      const query = await sql.query`insert into tbSapAudit (Data, Type, RegDate ) values(${data.dat}, ${data.tipo}, getdate())`
       callback(null, query)
     } catch (e) {
       callback(e, null)
